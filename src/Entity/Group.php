@@ -103,4 +103,9 @@ class Group
 
         return $this;
     }
+
+    public function hasUsers():bool
+    {
+     return count($this->getUsers())>0;
+    }
 }

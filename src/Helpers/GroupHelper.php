@@ -59,17 +59,5 @@ class GroupHelper
     }
 
 
-    public function areUserExists(Group $group)
-    {
-  
-        if (count($group->getUsers())>0){
-            return [
-                'isValid' => false
-            ];
-        }
 
-        return [
-            'isValid' => True
-        ];
-    }
 }

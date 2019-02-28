@@ -90,9 +90,7 @@ class GroupController extends AbstractController
             return $this->json(['message' => 'Requested group does not exist.']);
         }
 
-        $areUsersExists = $this->groupHelper->areUserExists($group)['isValid'];
-        
-        if(!$areUsersExists){
+        if($group->hasUsers()){
             return $this->json(['message' => 'Group cannot be deleted since it has users']);
         }
         

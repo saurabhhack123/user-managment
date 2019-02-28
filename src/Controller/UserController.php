@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Helpers\ErrorHelper;
 use App\Helpers\TokenGenerator;
 use App\Helpers\UserHelper;
+use App\Model\Login;
 use JMS\Serializer\SerializerInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\SerializationContext;
@@ -66,7 +67,7 @@ class UserController extends AbstractController
         $this->serializer     = $serializer;
         $this->tokenGenerator = $tokenGenerator;
         $this->helper         = $helper;
-        $this->errorHelper = $errorHelper;
+        $this->errorHelper    = $errorHelper;
     }
 
     /**
@@ -155,24 +156,25 @@ class UserController extends AbstractController
      *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
+
     public function loginAction(Request $request)
     {
-        $email = $request->get('email', null);
-        if (!$email) {
-            return $this->json(['message' => 'Please provide email.']);
+        $login = new Login();
+        $login->setEmail($request->get('email', null));
+        $login->setPassword($request->get('password', null));
+
+        $errors = $this->validator->validate($login);
+
+        if ($errors->count() > 0) {
+            return $this->json($this->errorHelper->prepareResponse($errors));
         }
 
-        $password = $request->get('password', null);
-        if (!$password) {
-            return $this->json(['message' => 'Please provide password.']);
-        }
-
-        $user = $this->em->getRepository(User::class)->findOneBy(['email' => $email]);
+        $user = $this->em->getRepository(User::class)->findOneBy(['email' => $request->get('email')]);
         if (!$user) {
             return $this->json(['message' => 'User does not exist.']);
         }
 
-        $isValid = $this->encoder->isPasswordValid($user, $password);
+        $isValid = $this->encoder->isPasswordValid($user, $request->get('password'));
 
         if ($isValid) {
             $user->setToken($this->tokenGenerator->generate());
